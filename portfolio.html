@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;800&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Crimson Pro', Georgia, serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 40px 20px;
+            min-height: 100vh;
+            --bg: #0d0f14;
+            --surface: #13151c;
+            --surface2: #1a1d28;
+            --border: #2a2d3e;
+            --border2: #3a3d52;
+            --accent: #7eb8b0;
+            --accent2: #c4a882;
+            --text: #d4cfc8;
+            --muted: #7a7870;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--accent2) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-family: 'Cinzel', serif;
+            letter-spacing: 0.15em;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            opacity: 0.8;
+            margin-bottom: 50px;
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+        }
+
+        .project-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .project-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(126, 184, 176, 0.15);
+            border-color: var(--accent);
+        }
+
+        .project-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #5a8e8a 0%, #4a7370 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 64px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .project-image::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent 30%, rgba(126, 184, 176, 0.2) 50%, transparent 70%);
+            transform: translateX(-100%);
+            transition: transform 0.6s;
+        }
+
+        .project-card:hover .project-image::before {
+            transform: translateX(100%);
+        }
+
+        .project-image.blue { background: linear-gradient(135deg, #5a8e8a 0%, #4a7370 100%); }
+        .project-image.purple { background: linear-gradient(135deg, #8a7a9e 0%, #6e5f82 100%); }
+        .project-image.green { background: linear-gradient(135deg, #6a9976 0%, #577e62 100%); }
+        .project-image.orange { background: linear-gradient(135deg, #b8926a 0%, #9a7854 100%); }
+        .project-image.pink { background: linear-gradient(135deg, #a77e8e 0%, #8a6574 100%); }
+        .project-image.cyan { background: linear-gradient(135deg, #6a9aa8 0%, #537e8a 100%); }
+
+        .project-content {
+            padding: 24px;
+        }
+
+        .project-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--accent2);
+            font-family: 'Cinzel', serif;
+            letter-spacing: 0.05em;
+        }
+
+        .project-description {
+            font-size: 14px;
+            line-height: 1.6;
+            opacity: 0.8;
+            margin-bottom: 16px;
+            color: var(--text);
+        }
+
+        .project-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tag {
+            background: rgba(126, 184, 176, 0.12);
+            color: var(--accent);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 500;
+            border: 1px solid var(--border);
+            font-family: 'Cinzel', serif;
+            letter-spacing: 0.05em;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 50px;
+            padding: 30px;
+            background: var(--surface);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: 800;
+            color: var(--accent);
+            margin-bottom: 8px;
+            font-family: 'Cinzel', serif;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            opacity: 0.7;
+            color: var(--muted);
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Portfolio</h1>
+        <p class="subtitle">Découvrez mes projets et réalisations</p>
+
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value">50+</div>
+                <div class="stat-label">Projets réalisés</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">30+</div>
+                <div class="stat-label">Clients satisfaits</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">5</div>
+                <div class="stat-label">Années d'expérience</div>
+            </div>
+        </div>
+
+        <div class="projects-grid">
+            <div class="project-card">
+                <div class="project-image blue">🌐</div>
+                <div class="project-content">
+                    <div class="project-title">Site E-commerce</div>
+                    <div class="project-description">
+                        Plateforme de vente en ligne avec système de paiement intégré et gestion des stocks en temps réel.
+                    </div>
+                    <div class="project-tags">
+                        <span class="tag">React</span>
+                        <span class="tag">Node.js</span>
+                        <span class="tag">MongoDB</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="project-card">
+                <div class="project-image purple">📱</div>
+                <div class="project-content">
+                    <div class="project-title">Application Mobile</div>
+                    <div class="project-description">
+                        Application de gestion de tâches collaborative avec synchronisation cloud et notifications push.
+                    </div>
+                    <div class="project-tags">
+                        <span class="tag">React Native</span>
+                        <span class="tag">Firebase</span>
+                        <span class="tag">TypeScript</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="project-card">
+                <div class="project-image green">🎮</div>
+                <div class="project-content">
+                    <div class="project-title">Jeu Web Interactif</div>
+                    <div class="project-description">
+                        Jeu multijoueur en temps réel avec système de classement et personnalisation des avatars.
+                    </div>
+                    <div class="project-tags">
+                        <span class="tag">Three.js</span>
+                        <span class="tag">WebSocket</span>
+                        <span class="tag">Canvas</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="project-card">
+                <div class="project-image orange">📊</div>
+                <div class="project-content">
+                    <div class="project-title">Dashboard Analytics</div>
+                    <div class="project-description">
+                        Tableau de bord pour visualiser les données marketing avec graphiques interactifs et exports PDF.
+                    </div>
+                    <div class="project-tags">
+                        <span class="tag">Vue.js</span>
+                        <span class="tag">D3.js</span>
+                        <span class="tag">Python</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="project-card">
+                <div class="project-image pink">🎨</div>
+                <div class="project-content">
+                    <div class="project-title">Portfolio Créatif</div>
+                    <div class="project-description">
+                        Site vitrine pour un photographe avec galerie photo interactive et système de réservation.
+                    </div>
+                    <div class="project-tags">
+                        <span class="tag">Next.js</span>
+                        <span class="tag">Framer Motion</span>
+                        <span class="tag">Tailwind</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="project-card">
+                <div class="project-image cyan">🤖</div>
+                <div class="project-content">
+                    <div class="project-title">Chatbot IA</div>
+                    <div class="project-description">
+                        Assistant virtuel intelligent pour service client avec apprentissage automatique et NLP.
+                    </div>
+                    <div class="project-tags">
+                        <span class="tag">Python</span>
+                        <span class="tag">TensorFlow</span>
+                        <span class="tag">FastAPI</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

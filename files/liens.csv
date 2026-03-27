@@ -1,0 +1,10 @@
+id,personnage_id,illustration_url,nom,prenom,nature_lien,description
+1,1,https://picsum.photos/200/200?random=10,Baratheon,Robert,Ami et Roi,"Ami d'enfance devenu roi. Relation complexe entre loyauté et devoir."
+2,1,https://picsum.photos/200/200?random=11,Stark,Catelyn,Épouse,"Femme aimée et respectée. Pilier de la famille Stark."
+3,1,https://picsum.photos/200/200?random=12,Stark,Robb,Fils aîné,"Héritier de Winterfell. Fierté paternelle."
+4,2,https://picsum.photos/200/200?random=13,Lannister,Jaime,Frère,"Relation fraternelle complexe mêlant admiration et jalousie."
+5,2,https://picsum.photos/200/200?random=14,Lannister,Cersei,Sœur,"Animosité familiale. Mépris réciproque."
+6,2,https://picsum.photos/200/200?random=15,,Varys,Allié politique,"Alliance stratégique basée sur l'intelligence mutuelle."
+7,3,https://picsum.photos/200/200?random=16,,Khal Drogo,Époux,"Mari et protecteur. Amour né d'un mariage arrangé."
+8,3,https://picsum.photos/200/200?random=17,,Jorah,Conseiller fidèle,"Conseiller loyal avec des sentiments plus profonds."
+9,3,https://picsum.photos/200/200?random=18,,Missandei,Amie proche,"Confidente et traductrice. Amitié sincère."

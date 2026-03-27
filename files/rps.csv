@@ -1,0 +1,10 @@
+id,personnage_id,nom_rp,partenaire,a_jour,url_rp
+1,1,"Le Conseil Restreint",Robert Baratheon,true,https://exemple.com/rp/1
+2,1,"Secrets de Famille",Catelyn Stark,false,https://exemple.com/rp/2
+3,1,"La Main du Roi",Jon Arryn,true,https://exemple.com/rp/3
+4,2,"Jeux de Pouvoir",Cersei Lannister,false,https://exemple.com/rp/4
+5,2,"Le Procès",Jaime Lannister,true,https://exemple.com/rp/5
+6,2,"Stratégies Nocturnes",Varys,false,https://exemple.com/rp/6
+7,3,"Khaleesi des Dothrakis",Khal Drogo,true,https://exemple.com/rp/7
+8,3,"Conseils d'une Amie",Missandei,true,https://exemple.com/rp/8
+9,3,"La Reine Dragon",Jorah Mormont,false,https://exemple.com/rp/9

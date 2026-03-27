@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Éditeur de Fiche — Where Echoes Remain</title>
+<link href="/css/pages/genWuwa.css" rel="stylesheet">
+</head>
+<body>
+
+<h1>Éditeur de Fiche</h1>
+<p class="sub">Where Echoes Remain — Parseur &amp; éditeur de fiche technique</p>
+
+<div class="tabs">
+  <button class="tab on"  onclick="sw('import')"><span class="num">1</span>Importer</button>
+  <button class="tab"     onclick="sw('edit')"><span class="num">2</span>Éditer</button>
+  <button class="tab"     onclick="sw('nexus')"><span class="num">3</span>Nexus</button>
+  <button class="tab"     onclick="sw('export')"><span class="num">4</span>Exporter</button>
+</div>
+
+<!-- ═══ TAB 1 : IMPORT ═══════════════════════════════════════════ -->
+<div class="tp on" id="tp-import"><div class="panel"><div class="pi">
+  <div class="steps">
+    <div class="step">Ouvre la fiche sur le forum</div>
+    <div class="step">Inspecteur → sélectionne le nœud racine du post</div>
+    <div class="step">Clic droit → Copy outerHTML</div>
+    <div class="step">Colle ici &amp; Analyser</div>
+  </div>
+  <div class="sec">
+    <div class="sh">HTML brut de la fiche <span style="color:var(--muted);font-size:.68rem;font-style:italic;">outerHTML complet du post (fiche + nexus)</span></div>
+    <div class="sb">
+      <textarea class="paste" id="raw" placeholder="Colle ici le outerHTML copié depuis l'inspecteur…&#10;&#10;Le parser extraira automatiquement : identité, bannière, stats, capacités, et l'état de synchronisation de tous les nexus."></textarea>
+      <div class="br">
+        <button class="btn g" onclick="parse()">✦ Analyser le HTML</button>
+        <button class="btn"   onclick="demo()">⟳ Charger la démo</button>
+        <button class="btn d" onclick="document.getElementById('raw').value='';document.getElementById('pst').className='st';">✕ Effacer</button>
+      </div>
+      <div class="st" id="pst"></div>
+    </div>
+  </div>
+</div></div></div>
+
+<!-- ═══ TAB 2 : EDIT ══════════════════════════════════════════════ -->
+<div class="tp" id="tp-edit"><div class="panel"><div class="pi">
+<div class="two">
+
+  <!-- COL GAUCHE -->
+  <div>
+    <div class="sec"><div class="sh">Identité</div><div class="sb">
+      <div class="fr"><label>Nom</label><input id="f-name" type="text"></div>
+      <div class="fr"><label>Feat</label><input id="f-feat" type="text"></div>
+      <div class="fr"><label>Source</label><input id="f-source" type="text"></div>
+    </div></div>
+
+    <div class="sec"><div class="sh">Bannière</div><div class="sb">
+      <div class="fr full"><label>URL du GIF / image</label>
+        <div class="banner-row">
+          <input id="f-banner" type="text" placeholder="https://…gif" oninput="previewBanner()">
+          <div>
+            <div class="banner-ph" id="banner-ph">aperçu</div>
+            <img  id="banner-th" class="banner-thumb" alt="bannière">
+          </div>
+        </div>
+      </div>
+    </div></div>
+
+    <div class="sec"><div class="sh">Fiche technique</div><div class="sb">
+      <div class="fr"><label>Élément</label>
+        <select id="f-element"><option>Spectro</option><option>Fusion</option><option>Glacio</option><option>Electro</option><option>Aero</option><option>Havoc</option></select>
+      </div>
+      <div class="fr"><label>Arme</label>
+        <select id="f-arme"><option>Epée à une main</option><option>Grande épée</option><option>Pistolets</option><option>Rectificateur</option><option>Cimeterre</option></select>
+      </div>
+      <div class="fr"><label>Équipement</label>
+        <select id="f-equip"><option>Débutant</option><option>Intermédiaire</option><option>Avancé</option><option>Expert</option></select>
+      </div>
+      <div class="fr"><label>Domaine expert</label><input id="f-dom1" type="text"></div>
+      <div class="fr"><label>Domaine bon</label><input id="f-dom2" type="text"></div>
+      <div class="fr"><label>Domaine moyen</label><input id="f-dom3" type="text"></div>
+    </div></div>
+
+    <div class="sec">
+      <div class="sh">Stats <span class="pill" id="tp1" style="color:var(--muted);border-color:var(--border2);">— / 36</span></div>
+      <div class="sb">
+        <div class="sg">
+          <div class="sr"><label>Résonance</label>   <input type="number" id="s-res" min="2" max="9" oninput="utotal()"></div>
+          <div class="sr"><label>Force</label>        <input type="number" id="s-for" min="2" max="9" oninput="utotal()"></div>
+          <div class="sr"><label>Intelligence</label> <input type="number" id="s-int" min="2" max="9" oninput="utotal()"></div>
+          <div class="sr"><label>Constitution</label> <input type="number" id="s-con" min="2" max="9" oninput="utotal()"></div>
+          <div class="sr"><label>Dextérité</label>    <input type="number" id="s-dex" min="2" max="9" oninput="utotal()"></div>
+          <div class="sr"><label>Charisme</label>     <input type="number" id="s-cha" min="2" max="9" oninput="utotal()"></div>
+          <div class="sr"><label>Perception</label>   <input type="number" id="s-per" min="2" max="9" oninput="utotal()"></div>
+        </div>
+        <div class="tbar">
+          <span style="font-style:italic;font-size:.78rem;">Min 2 · Max 9</span>
+          <span class="pill" id="tp2" style="color:var(--muted);border-color:var(--border2);">0 / 36</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COL DROITE -->
+  <div>
+    <div class="sec"><div class="sh">Capacités</div><div class="sb">
+      <div class="fr full"><label>Attaque de base</label><textarea id="f-atk" rows="3"></textarea></div>
+      <div style="height:.7rem"></div>
+      <div class="fr"><label>Compétence — Nom</label><input id="f-cnom" type="text"></div>
+      <div class="fr full"><label>Compétence — Description</label><textarea id="f-cdesc" rows="4"></textarea></div>
+      <div style="height:.7rem"></div>
+      <div class="fr"><label>Libération — Nom</label><input id="f-lnom" type="text"></div>
+      <div class="fr full"><label>Libération — Description</label><textarea id="f-ldesc" rows="4"></textarea></div>
+      <div style="height:.7rem"></div>
+      <div class="fr full"><label>Effets négatifs</label><textarea id="f-neg" rows="5"></textarea></div>
+    </div></div>
+  </div>
+
+</div><!-- /two -->
+<div class="br">
+  <button class="btn g" onclick="gen();sw('export')">✦ Générer le code &amp; exporter</button>
+</div>
+</div></div></div>
+
+<!-- ═══ TAB 3 : NEXUS ═════════════════════════════════════════════ -->
+<div class="tp" id="tp-nexus"><div class="panel"><div class="pi">
+
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+    <div style="font-size:.82rem;color:var(--muted);font-style:italic;">Clique sur un nexus pour basculer son état synchronisé / non synchronisé.</div>
+    <div class="nx-count" id="nx-total-count"></div>
+  </div>
+
+  <div class="three" id="nx-regions-container">
+    <!-- Généré dynamiquement par JS -->
+  </div>
+
+</div></div></div>
+
+<!-- ═══ TAB 4 : EXPORT ════════════════════════════════════════════ -->
+<div class="tp" id="tp-export"><div class="panel"><div class="pi">
+  <div class="sec">
+    <div class="sh">Code HTML généré
+      <div style="display:flex;gap:.5rem;">
+        <button class="btn" style="padding:.25rem .7rem;font-size:.65rem;" onclick="cp()">⎘ Copier</button>
+        <button class="btn" style="padding:.25rem .7rem;font-size:.65rem;" onclick="dl()">↓ Télécharger</button>
+        <button class="btn" style="padding:.25rem .7rem;font-size:.65rem;" onclick="gen();rp()">↺ Régénérer</button>
+      </div>
+    </div>
+    <div class="sb"><div class="out" id="out">— Génère le code depuis l'onglet Éditer —</div></div>
+  </div>
+  <div class="sec">
+    <div class="sh">Aperçu (avec CSS du forum)</div>
+    <iframe id="preview-frame" sandbox="allow-scripts allow-same-origin"></iframe>
+  </div>
+</div></div></div>
+<script src="/js/genWuwa.js"></script>
+</body>
+</html>

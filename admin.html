@@ -1,0 +1,1810 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration - Gestion des RP</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap');
+
+        :root {
+            --bg: #0d0f14;
+            --surface: #13151c;
+            --surface2: #1a1d28;
+            --border: #2a2d3e;
+            --border2: #3a3d52;
+            --accent: #7eb8b0;
+            --accent2: #c4a882;
+            --text: #d4cfc8;
+            --muted: #7a7870;
+            --ok: #5a9e7a;
+            --err: #9e5a5a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Crimson Pro', Georgia, serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 2rem 1rem;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(ellipse at 20% 10%, rgba(126, 184, 176, 0.04) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(160, 112, 96, 0.04) 0%, transparent 50%);
+        }
+
+        /* LOGIN SCREEN */
+        #login-screen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 80vh;
+        }
+
+        #admin-panel {
+            display: none;
+        }
+
+        .login-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 3rem 2.5rem;
+            max-width: 450px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .login-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent2);
+            letter-spacing: 0.12em;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-subtitle {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.9rem;
+            font-style: italic;
+            margin-bottom: 2rem;
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .login-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .login-field label {
+            font-family: 'Cinzel', serif;
+            font-size: 0.75rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--accent);
+        }
+
+        .login-field input {
+            background: var(--surface2);
+            border: 1px solid var(--border2);
+            border-radius: 6px;
+            color: var(--text);
+            font-family: 'Crimson Pro', serif;
+            font-size: 1rem;
+            padding: 0.75rem 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .login-field input:focus {
+            border-color: var(--accent);
+        }
+
+        .login-btn {
+            background: transparent;
+            border: 1px solid var(--accent2);
+            border-radius: 6px;
+            color: var(--accent2);
+            cursor: pointer;
+            font-family: 'Cinzel', serif;
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
+            padding: 0.85rem;
+            transition: background 0.3s, color 0.3s;
+            text-transform: uppercase;
+            margin-top: 0.5rem;
+        }
+
+        .login-btn:hover:not(:disabled) {
+            background: var(--accent2);
+            color: var(--bg);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .login-error {
+            background: rgba(158, 90, 90, 0.15);
+            border: 1px solid rgba(158, 90, 90, 0.3);
+            color: var(--err);
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            text-align: center;
+            display: none;
+        }
+
+        .login-error.show {
+            display: block;
+        }
+
+        .logout-btn {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: transparent;
+            border: 1px solid var(--err);
+            border-radius: 6px;
+            color: var(--err);
+            cursor: pointer;
+            font-family: 'Cinzel', serif;
+            font-size: 0.65rem;
+            letter-spacing: 0.08em;
+            padding: 0.5rem 1rem;
+            transition: background 0.3s, color 0.3s;
+            text-transform: uppercase;
+            z-index: 1000;
+        }
+
+        .logout-btn:hover {
+            background: var(--err);
+            color: #fff;
+        }
+
+        h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--accent2);
+            letter-spacing: 0.12em;
+            text-align: center;
+            margin-bottom: 0.2rem;
+        }
+
+        .sub {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.88rem;
+            font-style: italic;
+            margin-bottom: 1.75rem;
+        }
+
+        /* TABS */
+        .tabs {
+            display: flex;
+            max-width: 1300px;
+            margin: 0 auto;
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+        }
+
+        .tab {
+            background: none;
+            border: 1px solid transparent;
+            border-bottom: none;
+            border-radius: 4px 4px 0 0;
+            color: var(--muted);
+            cursor: pointer;
+            font-family: 'Cinzel', serif;
+            font-size: 0.7rem;
+            letter-spacing: 0.08em;
+            padding: 0.55rem 1.2rem;
+            transition: color 0.2s, background 0.2s;
+            white-space: nowrap;
+        }
+
+        .tab:hover {
+            color: var(--accent);
+        }
+
+        .tab.on {
+            background: var(--surface);
+            border-color: var(--border);
+            color: var(--accent2);
+        }
+
+        .num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--border2);
+            border-radius: 50%;
+            font-size: 0.6rem;
+            width: 16px;
+            height: 16px;
+            margin-right: 5px;
+            color: var(--muted);
+        }
+
+        .tab.on .num {
+            background: var(--accent2);
+            color: var(--bg);
+        }
+
+        .tp {
+            display: none;
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        .tp.on {
+            display: block;
+        }
+
+        /* PANELS */
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-top: none;
+            border-radius: 0 0 6px 6px;
+        }
+
+        .pi {
+            padding: 1.5rem;
+        }
+
+        .sec {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            margin-bottom: 1.25rem;
+            overflow: hidden;
+        }
+
+        .sh {
+            padding: 0.6rem 1rem;
+            background: var(--surface2);
+            border-bottom: 1px solid var(--border);
+            font-family: 'Cinzel', serif;
+            font-size: 0.7rem;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .sb {
+            padding: 1rem;
+        }
+
+        .two {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media(max-width: 700px) {
+            .two {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* INPUTS */
+        input, select, textarea {
+            background: var(--surface2);
+            border: 1px solid var(--border2);
+            border-radius: 4px;
+            color: var(--text);
+            font-family: 'Crimson Pro', serif;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+            width: 100%;
+        }
+
+        input, select {
+            padding: 0.4rem 0.7rem;
+        }
+
+        textarea {
+            padding: 0.5rem 0.7rem;
+            resize: vertical;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--accent);
+        }
+
+        select {
+            cursor: pointer;
+        }
+
+        select option {
+            background: var(--surface2);
+        }
+
+        .fr {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            align-items: start;
+            gap: 0.5rem;
+            margin-bottom: 0.55rem;
+        }
+
+        .fr label {
+            font-size: 0.82rem;
+            color: var(--muted);
+            font-style: italic;
+            padding-top: 0.42rem;
+        }
+
+        .fr.full {
+            grid-template-columns: 1fr;
+        }
+
+        .fr.full label {
+            padding-top: 0;
+            margin-bottom: 0.25rem;
+        }
+
+        @media(max-width: 600px) {
+            .fr {
+                grid-template-columns: 1fr;
+            }
+
+            .fr label {
+                padding-top: 0;
+                margin-bottom: 0.25rem;
+            }
+        }
+
+        /* BUTTONS */
+        .btn {
+            background: transparent;
+            border: 1px solid var(--accent);
+            border-radius: 4px;
+            color: var(--accent);
+            cursor: pointer;
+            font-family: 'Cinzel', serif;
+            font-size: 0.68rem;
+            letter-spacing: 0.08em;
+            padding: 0.5rem 1.1rem;
+            transition: background 0.2s, color 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            background: var(--accent);
+            color: var(--bg);
+        }
+
+        .btn.g {
+            border-color: var(--accent2);
+            color: var(--accent2);
+        }
+
+        .btn.g:hover {
+            background: var(--accent2);
+            color: var(--bg);
+        }
+
+        .btn.d {
+            border-color: var(--err);
+            color: var(--err);
+        }
+
+        .btn.d:hover {
+            background: var(--err);
+            color: #fff;
+        }
+
+        .br {
+            display: flex;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        /* STATUS */
+        .st {
+            font-size: 0.82rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 4px;
+            margin-top: 0.75rem;
+            display: none;
+            line-height: 1.5;
+        }
+
+        .st.ok {
+            display: block;
+            background: rgba(90, 158, 122, 0.1);
+            border: 1px solid rgba(90, 158, 122, 0.3);
+            color: var(--ok);
+        }
+
+        .st.er {
+            display: block;
+            background: rgba(158, 90, 90, 0.1);
+            border: 1px solid rgba(158, 90, 90, 0.3);
+            color: var(--err);
+        }
+
+        /* TABLE */
+        .tbl {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .tbl th {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--accent);
+            font-family: 'Cinzel', serif;
+            font-size: 0.7rem;
+            letter-spacing: 0.08em;
+            padding: 0.5rem 0.75rem;
+            text-align: left;
+            text-transform: uppercase;
+        }
+
+        .tbl td {
+            border: 1px solid var(--border);
+            padding: 0.5rem 0.75rem;
+        }
+
+        .tbl tr:hover {
+            background: var(--surface2);
+        }
+
+        .tbl-actions {
+            display: flex;
+            gap: 0.4rem;
+        }
+
+        .tbl-actions button {
+            font-size: 0.65rem;
+            padding: 0.3rem 0.7rem;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 2rem;
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        /* LOADING */
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border2);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* CHECKBOX */
+        .checkbox {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .checkbox input {
+            width: auto;
+            cursor: pointer;
+        }
+
+        /* MODAL D'ÉDITION */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 9999;
+            overflow-y: auto;
+            padding: 2rem 1rem;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            max-width: 1200px;
+            width: 100%;
+            margin: auto;
+            position: relative;
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            background: var(--surface2);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 12px 12px 0 0;
+        }
+
+        .modal-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.2rem;
+            color: var(--accent2);
+            letter-spacing: 0.1em;
+        }
+
+        .modal-close {
+            background: transparent;
+            border: 1px solid var(--border2);
+            color: var(--muted);
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: var(--err);
+            color: #fff;
+            border-color: var(--err);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .edit-section {
+            margin-bottom: 2rem;
+        }
+
+        .edit-section-title {
+            font-family: 'Cinzel', serif;
+            font-size: 0.85rem;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .item-card {
+            background: var(--surface2);
+            border: 1px solid var(--border2);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .item-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+        }
+
+        .item-card-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .item-card-actions {
+            display: flex;
+            gap: 0.4rem;
+        }
+
+        .item-card-actions button {
+            font-size: 0.65rem;
+            padding: 0.3rem 0.7rem;
+        }
+
+        .add-item-btn {
+            font-size: 0.7rem;
+            padding: 0.4rem 0.9rem;
+        }
+
+        /* Formulaire inline pour ajouter/éditer */
+        .inline-form {
+            background: var(--bg);
+            border: 1px solid var(--accent);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .inline-form.show {
+            display: block;
+        }
+
+        .inline-form .fr {
+            margin-bottom: 0.7rem;
+        }
+
+        .inline-form-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- ÉCRAN DE LOGIN -->
+    <div id="login-screen">
+        <div class="login-box">
+            <h1 class="login-title">🔐 Administration</h1>
+            <p class="login-subtitle">Accès sécurisé requis</p>
+            
+            <form class="login-form" id="login-form">
+                <div class="login-field">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" name="email" required autocomplete="email">
+                </div>
+                
+                <div class="login-field">
+                    <label for="login-password">Mot de passe</label>
+                    <input type="password" id="login-password" name="password" required autocomplete="current-password">
+                </div>
+                
+                <div class="login-error" id="login-error"></div>
+                
+                <button type="submit" class="login-btn" id="login-btn">Se connecter</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- PANNEAU ADMIN -->
+    <div id="admin-panel">
+        <button class="logout-btn" onclick="logout()">Déconnexion</button>
+
+    <h1>⚙️ Administration RP</h1>
+    <p class="sub">Gérez vos personnages, RP et liens</p>
+
+    <!-- Tabs -->
+    <div class="tabs">
+        <button class="tab on" onclick="switchTab(0)">
+            <span class="num" id="count-perso">0</span>Personnages
+        </button>
+        <button class="tab" onclick="switchTab(1)">
+            <span class="num" id="count-rp">0</span>RP
+        </button>
+        <button class="tab" onclick="switchTab(2)">
+            <span class="num" id="count-lien">0</span>Liens
+        </button>
+    </div>
+
+    <!-- Panel 1: Personnages -->
+    <div class="tp on">
+        <div class="panel">
+            <div class="pi">
+                <!-- Formulaire Ajout Personnage -->
+                <div class="sec">
+                    <div class="sh">Ajouter un personnage</div>
+                    <div class="sb">
+                        <form id="form-perso">
+                            <div class="two">
+                                <div>
+                                    <div class="fr">
+                                        <label>Prénom *</label>
+                                        <input type="text" name="prenom" required>
+                                    </div>
+                                    <div class="fr">
+                                        <label>Nom *</label>
+                                        <input type="text" name="nom" required>
+                                    </div>
+                                    <div class="fr">
+                                        <label>Avatar *</label>
+                                        <input type="text" name="avatar" placeholder="Nom de l'acteur/actrice" required>
+                                    </div>
+                                    <div class="fr">
+                                        <label>Forum *</label>
+                                        <input type="text" name="joue_sur" placeholder="Nom du forum" required>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="fr">
+                                        <label>URL Illustration *</label>
+                                        <input type="url" name="illustration_url" placeholder="https://..." required>
+                                    </div>
+                                    <div class="fr">
+                                        <label>URL GIF</label>
+                                        <input type="url" name="gif_url" placeholder="https://... (optionnel)">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="fr full">
+                                <label>Description (100-200 mots)</label>
+                                <textarea name="description" rows="4" maxlength="1000"></textarea>
+                            </div>
+                            <div class="br">
+                                <button type="submit" class="btn g">Ajouter le personnage</button>
+                                <button type="reset" class="btn">Réinitialiser</button>
+                            </div>
+                            <div id="status-perso" class="st"></div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Liste Personnages -->
+                <div class="sec">
+                    <div class="sh">Liste des personnages</div>
+                    <div class="sb">
+                        <div id="list-perso" class="loading">
+                            <div class="spinner"></div>
+                            <p>Chargement...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel 2: RP -->
+    <div class="tp">
+        <div class="panel">
+            <div class="pi">
+                <!-- Formulaire Ajout RP -->
+                <div class="sec">
+                    <div class="sh">Ajouter un RP</div>
+                    <div class="sb">
+                        <form id="form-rp">
+                            <div class="fr">
+                                <label>Personnage *</label>
+                                <select name="personnage_id" id="select-perso-rp" required>
+                                    <option value="">Choisir un personnage...</option>
+                                </select>
+                            </div>
+                            <div class="fr">
+                                <label>Nom du RP *</label>
+                                <input type="text" name="nom_rp" placeholder="Titre du RP" required>
+                            </div>
+                            <div class="fr">
+                                <label>Partenaire *</label>
+                                <input type="text" name="partenaire" placeholder="Nom du partenaire" required>
+                            </div>
+                            <div class="fr">
+                                <label>URL du RP</label>
+                                <input type="url" name="url_rp" placeholder="https://... (optionnel)">
+                            </div>
+                            <div class="fr">
+                                <label>Statut</label>
+                                <label class="checkbox">
+                                    <input type="checkbox" name="a_jour">
+                                    <span>RP à jour</span>
+                                </label>
+                            </div>
+                            <div class="br">
+                                <button type="submit" class="btn g">Ajouter le RP</button>
+                                <button type="reset" class="btn">Réinitialiser</button>
+                            </div>
+                            <div id="status-rp" class="st"></div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Liste RP -->
+                <div class="sec">
+                    <div class="sh">Liste des RP</div>
+                    <div class="sb">
+                        <div id="list-rp" class="loading">
+                            <div class="spinner"></div>
+                            <p>Chargement...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel 3: Liens -->
+    <div class="tp">
+        <div class="panel">
+            <div class="pi">
+                <!-- Formulaire Ajout Lien -->
+                <div class="sec">
+                    <div class="sh">Ajouter un lien</div>
+                    <div class="sb">
+                        <form id="form-lien">
+                            <div class="fr">
+                                <label>Personnage *</label>
+                                <select name="personnage_id" id="select-perso-lien" required>
+                                    <option value="">Choisir un personnage...</option>
+                                </select>
+                            </div>
+                            <div class="two">
+                                <div>
+                                    <div class="fr">
+                                        <label>Prénom</label>
+                                        <input type="text" name="prenom" placeholder="Prénom (optionnel)">
+                                    </div>
+                                    <div class="fr">
+                                        <label>Nom *</label>
+                                        <input type="text" name="nom" placeholder="Nom du personnage lié" required>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="fr">
+                                        <label>Nature du lien *</label>
+                                        <input type="text" name="nature_lien" placeholder="Ex: Ami, Ennemi, Famille..." required>
+                                    </div>
+                                    <div class="fr">
+                                        <label>URL Illustration *</label>
+                                        <input type="url" name="illustration_url" placeholder="https://... (200x200px)" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="fr full">
+                                <label>Description courte</label>
+                                <textarea name="description" rows="3" maxlength="500" placeholder="Description de la relation..."></textarea>
+                            </div>
+                            <div class="br">
+                                <button type="submit" class="btn g">Ajouter le lien</button>
+                                <button type="reset" class="btn">Réinitialiser</button>
+                            </div>
+                            <div id="status-lien" class="st"></div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Liste Liens -->
+                <div class="sec">
+                    <div class="sh">Liste des liens</div>
+                    <div class="sb">
+                        <div id="list-lien" class="loading">
+                            <div class="spinner"></div>
+                            <p>Chargement...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- FIN PANNEAU ADMIN -->
+
+    <!-- MODAL D'ÉDITION COMPLÈTE -->
+    <div class="modal-overlay" id="edit-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-title">Éditer le personnage</h2>
+                <button class="modal-close" onclick="closeEditModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <!-- SECTION PERSONNAGE -->
+                <div class="edit-section">
+                    <h3 class="edit-section-title">📝 Informations du personnage</h3>
+                    <form id="edit-perso-form">
+                        <input type="hidden" id="edit-perso-id">
+                        <div class="two">
+                            <div>
+                                <div class="fr">
+                                    <label>Prénom *</label>
+                                    <input type="text" name="prenom" required>
+                                </div>
+                                <div class="fr">
+                                    <label>Nom *</label>
+                                    <input type="text" name="nom" required>
+                                </div>
+                                <div class="fr">
+                                    <label>Avatar *</label>
+                                    <input type="text" name="avatar" required>
+                                </div>
+                                <div class="fr">
+                                    <label>Forum *</label>
+                                    <input type="text" name="joue_sur" required>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="fr">
+                                    <label>URL Illustration *</label>
+                                    <input type="url" name="illustration_url" required>
+                                </div>
+                                <div class="fr">
+                                    <label>URL GIF</label>
+                                    <input type="url" name="gif_url">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="fr full">
+                            <label>Description</label>
+                            <textarea name="description" rows="4"></textarea>
+                        </div>
+                        <div class="br">
+                            <button type="submit" class="btn g">Enregistrer les modifications</button>
+                        </div>
+                        <div id="status-edit-perso" class="st"></div>
+                    </form>
+                </div>
+
+                <!-- SECTION RP -->
+                <div class="edit-section">
+                    <h3 class="edit-section-title">
+                        <span>🎭 RP en cours</span>
+                        <button type="button" class="btn add-item-btn" onclick="showAddRPForm()">+ Ajouter un RP</button>
+                    </h3>
+                    
+                    <!-- Formulaire d'ajout de RP -->
+                    <div class="inline-form" id="add-rp-form">
+                        <form id="new-rp-form">
+                            <div class="fr">
+                                <label>Nom du RP *</label>
+                                <input type="text" name="nom_rp" required>
+                            </div>
+                            <div class="fr">
+                                <label>Partenaire *</label>
+                                <input type="text" name="partenaire" required>
+                            </div>
+                            <div class="fr">
+                                <label>URL du RP</label>
+                                <input type="url" name="url_rp">
+                            </div>
+                            <div class="fr">
+                                <label>Statut</label>
+                                <label class="checkbox">
+                                    <input type="checkbox" name="a_jour">
+                                    <span>RP à jour</span>
+                                </label>
+                            </div>
+                            <div class="inline-form-actions">
+                                <button type="submit" class="btn g">Ajouter</button>
+                                <button type="button" class="btn" onclick="hideAddRPForm()">Annuler</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Liste des RP -->
+                    <div id="edit-rp-list"></div>
+                </div>
+
+                <!-- SECTION LIENS -->
+                <div class="edit-section">
+                    <h3 class="edit-section-title">
+                        <span>🔗 Liens & Relations</span>
+                        <button type="button" class="btn add-item-btn" onclick="showAddLienForm()">+ Ajouter un lien</button>
+                    </h3>
+                    
+                    <!-- Formulaire d'ajout de lien -->
+                    <div class="inline-form" id="add-lien-form">
+                        <form id="new-lien-form">
+                            <div class="two">
+                                <div>
+                                    <div class="fr">
+                                        <label>Prénom</label>
+                                        <input type="text" name="prenom">
+                                    </div>
+                                    <div class="fr">
+                                        <label>Nom *</label>
+                                        <input type="text" name="nom" required>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="fr">
+                                        <label>Nature du lien *</label>
+                                        <input type="text" name="nature_lien" required>
+                                    </div>
+                                    <div class="fr">
+                                        <label>URL Illustration *</label>
+                                        <input type="url" name="illustration_url" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="fr full">
+                                <label>Description</label>
+                                <textarea name="description" rows="2"></textarea>
+                            </div>
+                            <div class="inline-form-actions">
+                                <button type="submit" class="btn g">Ajouter</button>
+                                <button type="button" class="btn" onclick="hideAddLienForm()">Annuler</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Liste des liens -->
+                    <div id="edit-lien-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // ⚠️ CONFIGURATION SUPABASE
+        const SUPABASE_URL = 'https://dbcrncfyvullrtyfsmqh.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRiY3JuY2Z5dnVsbHJ0eWZzbXFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NTA1MzUsImV4cCI6MjA5MDAyNjUzNX0.ATxml9DjJWBqJWhxwMWRSiyjrsSKmztyYm28kjjgtS0';
+
+        let supabase;
+        let personnages = [];
+        let rps = [];
+        let liens = [];
+        let currentUser = null;
+
+        // Initialiser Supabase
+        function initSupabase() {
+            if (typeof window.supabase === 'undefined') {
+                alert('Erreur : Impossible de charger Supabase. Vérifiez votre connexion.');
+                return false;
+            }
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            return true;
+        }
+
+        // ============ AUTHENTIFICATION ============
+
+        // Vérifier si l'utilisateur est déjà connecté
+        async function checkAuth() {
+            if (!initSupabase()) return;
+
+            const { data: { session } } = await supabase.auth.getSession();
+            
+            if (session) {
+                currentUser = session.user;
+                showAdminPanel();
+            }
+        }
+
+        // Gérer la connexion
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const errorDiv = document.getElementById('login-error');
+            const loginBtn = document.getElementById('login-btn');
+
+            // Désactiver le bouton
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Connexion...';
+            errorDiv.classList.remove('show');
+
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (error) throw error;
+
+                currentUser = data.user;
+                showAdminPanel();
+            } catch (error) {
+                errorDiv.textContent = error.message === 'Invalid login credentials' 
+                    ? 'Email ou mot de passe incorrect'
+                    : `Erreur : ${error.message}`;
+                errorDiv.classList.add('show');
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Se connecter';
+            }
+        });
+
+        // Afficher le panneau admin
+        async function showAdminPanel() {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('admin-panel').style.display = 'block';
+            
+            // Charger les données
+            await loadPersonnages();
+            await loadRPs();
+            await loadLiens();
+        }
+
+        // Déconnexion
+        async function logout() {
+            if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
+                await supabase.auth.signOut();
+                currentUser = null;
+                document.getElementById('login-screen').style.display = 'flex';
+                document.getElementById('admin-panel').style.display = 'none';
+                document.getElementById('login-form').reset();
+            }
+        }
+
+        // Switch tabs
+        function switchTab(index) {
+            const tabs = document.querySelectorAll('.tab');
+            const panels = document.querySelectorAll('.tp');
+            
+            tabs.forEach((t, i) => {
+                if (i === index) {
+                    t.classList.add('on');
+                    panels[i].classList.add('on');
+                } else {
+                    t.classList.remove('on');
+                    panels[i].classList.remove('on');
+                }
+            });
+        }
+
+        // Afficher message de statut
+        function showStatus(elementId, message, isError = false) {
+            const el = document.getElementById(elementId);
+            el.textContent = message;
+            el.className = 'st ' + (isError ? 'er' : 'ok');
+            setTimeout(() => {
+                el.className = 'st';
+            }, 5000);
+        }
+
+        // ============ PERSONNAGES ============
+
+        async function loadPersonnages() {
+            try {
+                const { data, error } = await supabase
+                    .from('personnages')
+                    .select('*')
+                    .order('nom', { ascending: true });
+
+                if (error) throw error;
+
+                personnages = data;
+                displayPersonnages();
+                updateSelects();
+                document.getElementById('count-perso').textContent = data.length;
+            } catch (error) {
+                document.getElementById('list-perso').innerHTML = `<div class="empty">Erreur : ${error.message}</div>`;
+            }
+        }
+
+        function displayPersonnages() {
+            const container = document.getElementById('list-perso');
+            
+            if (personnages.length === 0) {
+                container.innerHTML = '<div class="empty">Aucun personnage enregistré</div>';
+                return;
+            }
+
+            container.innerHTML = `
+                <table class="tbl">
+                    <thead>
+                        <tr>
+                            <th>Personnage</th>
+                            <th>Avatar</th>
+                            <th>Forum</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${personnages.map(p => `
+                            <tr>
+                                <td><strong>${p.prenom} ${p.nom}</strong></td>
+                                <td>${p.avatar}</td>
+                                <td>${p.joue_sur}</td>
+                                <td>
+                                    <div class="tbl-actions">
+                                        <button class="btn" onclick="editPersonnage(${p.id})">Modifier</button>
+                                        <button class="btn d" onclick="deletePersonnage(${p.id})">Supprimer</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        document.getElementById('form-perso').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+
+            try {
+                const { error } = await supabase
+                    .from('personnages')
+                    .insert([data]);
+
+                if (error) throw error;
+
+                showStatus('status-perso', '✓ Personnage ajouté avec succès !');
+                e.target.reset();
+                await loadPersonnages();
+            } catch (error) {
+                showStatus('status-perso', `Erreur : ${error.message}`, true);
+            }
+        });
+
+        // ============ MODAL D'ÉDITION COMPLÈTE ============
+
+        let currentEditPersonnageId = null;
+        let currentEditRPs = [];
+        let currentEditLiens = [];
+
+        // Ouvrir le modal d'édition
+        async function editPersonnage(id) {
+            currentEditPersonnageId = id;
+            
+            try {
+                // Charger le personnage
+                const { data: perso, error: persoError } = await supabase
+                    .from('personnages')
+                    .select('*')
+                    .eq('id', id)
+                    .single();
+
+                if (persoError) throw persoError;
+
+                // Charger les RP
+                const { data: rps, error: rpsError } = await supabase
+                    .from('rps')
+                    .select('*')
+                    .eq('personnage_id', id);
+
+                if (rpsError) throw rpsError;
+                currentEditRPs = rps;
+
+                // Charger les liens
+                const { data: liens, error: liensError } = await supabase
+                    .from('liens')
+                    .select('*')
+                    .eq('personnage_id', id);
+
+                if (liensError) throw liensError;
+                currentEditLiens = liens;
+
+                // Remplir le formulaire personnage
+                document.getElementById('edit-perso-id').value = perso.id;
+                document.getElementById('modal-title').textContent = `Éditer ${perso.prenom} ${perso.nom}`;
+                
+                const form = document.getElementById('edit-perso-form');
+                form.elements.prenom.value = perso.prenom;
+                form.elements.nom.value = perso.nom;
+                form.elements.avatar.value = perso.avatar;
+                form.elements.joue_sur.value = perso.joue_sur;
+                form.elements.illustration_url.value = perso.illustration_url;
+                form.elements.gif_url.value = perso.gif_url || '';
+                form.elements.description.value = perso.description || '';
+
+                // Afficher les listes
+                displayEditRPs();
+                displayEditLiens();
+
+                // Ouvrir le modal
+                document.getElementById('edit-modal').classList.add('show');
+                document.body.style.overflow = 'hidden';
+
+            } catch (error) {
+                alert(`Erreur : ${error.message}`);
+            }
+        }
+
+        // Fermer le modal
+        function closeEditModal() {
+            document.getElementById('edit-modal').classList.remove('show');
+            document.body.style.overflow = 'auto';
+            currentEditPersonnageId = null;
+            currentEditRPs = [];
+            currentEditLiens = [];
+            
+            // Réinitialiser les formulaires
+            document.getElementById('edit-perso-form').reset();
+            document.getElementById('new-rp-form').reset();
+            document.getElementById('new-lien-form').reset();
+            hideAddRPForm();
+            hideAddLienForm();
+        }
+
+        // Sauvegarder les modifications du personnage
+        document.getElementById('edit-perso-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            const id = document.getElementById('edit-perso-id').value;
+
+            try {
+                const { error } = await supabase
+                    .from('personnages')
+                    .update(data)
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                showStatus('status-edit-perso', '✓ Personnage mis à jour avec succès !');
+                await loadPersonnages();
+            } catch (error) {
+                showStatus('status-edit-perso', `Erreur : ${error.message}`, true);
+            }
+        });
+
+        // ============ GESTION DES RP DANS LE MODAL ============
+
+        function displayEditRPs() {
+            const container = document.getElementById('edit-rp-list');
+            
+            if (currentEditRPs.length === 0) {
+                container.innerHTML = '<p style="color: var(--muted); font-style: italic; padding: 1rem;">Aucun RP pour ce personnage</p>';
+                return;
+            }
+
+            container.innerHTML = currentEditRPs.map(rp => `
+                <div class="item-card" id="rp-card-${rp.id}">
+                    <div class="item-card-header">
+                        <div>
+                            <div class="item-card-title">${rp.nom_rp}</div>
+                            <div style="font-size: 0.85rem; color: var(--muted); margin-top: 0.25rem;">
+                                avec ${rp.partenaire} • ${rp.a_jour ? '✓ À jour' : '⏳ En attente'}
+                            </div>
+                            ${rp.url_rp ? `<div style="font-size: 0.8rem; margin-top: 0.25rem;"><a href="${rp.url_rp}" target="_blank" style="color: var(--accent);">Voir le RP →</a></div>` : ''}
+                        </div>
+                        <div class="item-card-actions">
+                            <button class="btn" onclick="toggleEditRPStatus(${rp.id}, ${!rp.a_jour})">${rp.a_jour ? 'En attente' : 'À jour'}</button>
+                            <button class="btn d" onclick="deleteEditRP(${rp.id})">Supprimer</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showAddRPForm() {
+            document.getElementById('add-rp-form').classList.add('show');
+        }
+
+        function hideAddRPForm() {
+            document.getElementById('add-rp-form').classList.remove('show');
+            document.getElementById('new-rp-form').reset();
+        }
+
+        document.getElementById('new-rp-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            data.personnage_id = currentEditPersonnageId;
+            data.a_jour = formData.get('a_jour') === 'on';
+
+            try {
+                const { data: newRP, error } = await supabase
+                    .from('rps')
+                    .insert([data])
+                    .select()
+                    .single();
+
+                if (error) throw error;
+
+                currentEditRPs.push(newRP);
+                displayEditRPs();
+                hideAddRPForm();
+                await loadRPs();
+            } catch (error) {
+                alert(`Erreur : ${error.message}`);
+            }
+        });
+
+        async function toggleEditRPStatus(id, newStatus) {
+            try {
+                const { error } = await supabase
+                    .from('rps')
+                    .update({ a_jour: newStatus })
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                const rp = currentEditRPs.find(r => r.id === id);
+                if (rp) rp.a_jour = newStatus;
+                
+                displayEditRPs();
+                await loadRPs();
+            } catch (error) {
+                alert(`Erreur : ${error.message}`);
+            }
+        }
+
+        async function deleteEditRP(id) {
+            if (!confirm('Supprimer ce RP ?')) return;
+
+            try {
+                const { error } = await supabase
+                    .from('rps')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                currentEditRPs = currentEditRPs.filter(r => r.id !== id);
+                displayEditRPs();
+                await loadRPs();
+            } catch (error) {
+                alert(`Erreur : ${error.message}`);
+            }
+        }
+
+        // ============ GESTION DES LIENS DANS LE MODAL ============
+
+        function displayEditLiens() {
+            const container = document.getElementById('edit-lien-list');
+            
+            if (currentEditLiens.length === 0) {
+                container.innerHTML = '<p style="color: var(--muted); font-style: italic; padding: 1rem;">Aucun lien pour ce personnage</p>';
+                return;
+            }
+
+            container.innerHTML = currentEditLiens.map(lien => `
+                <div class="item-card" id="lien-card-${lien.id}">
+                    <div class="item-card-header">
+                        <div>
+                            <div class="item-card-title">${lien.prenom ? lien.prenom + ' ' : ''}${lien.nom}</div>
+                            <div style="font-size: 0.85rem; color: var(--accent); margin-top: 0.25rem;">
+                                ${lien.nature_lien}
+                            </div>
+                            ${lien.description ? `<div style="font-size: 0.8rem; color: var(--muted); margin-top: 0.4rem; font-style: italic;">${lien.description}</div>` : ''}
+                        </div>
+                        <div class="item-card-actions">
+                            <button class="btn d" onclick="deleteEditLien(${lien.id})">Supprimer</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showAddLienForm() {
+            document.getElementById('add-lien-form').classList.add('show');
+        }
+
+        function hideAddLienForm() {
+            document.getElementById('add-lien-form').classList.remove('show');
+            document.getElementById('new-lien-form').reset();
+        }
+
+        document.getElementById('new-lien-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            data.personnage_id = currentEditPersonnageId;
+
+            try {
+                const { data: newLien, error } = await supabase
+                    .from('liens')
+                    .insert([data])
+                    .select()
+                    .single();
+
+                if (error) throw error;
+
+                currentEditLiens.push(newLien);
+                displayEditLiens();
+                hideAddLienForm();
+                await loadLiens();
+            } catch (error) {
+                alert(`Erreur : ${error.message}`);
+            }
+        });
+
+        async function deleteEditLien(id) {
+            if (!confirm('Supprimer ce lien ?')) return;
+
+            try {
+                const { error } = await supabase
+                    .from('liens')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                currentEditLiens = currentEditLiens.filter(l => l.id !== id);
+                displayEditLiens();
+                await loadLiens();
+            } catch (error) {
+                alert(`Erreur : ${error.message}`);
+            }
+        }
+
+        // Fermer le modal en cliquant en dehors
+        document.getElementById('edit-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeEditModal();
+            }
+        });
+
+        // ============ DELETE PERSONNAGE ============
+
+        async function deletePersonnage(id) {
+            if (!confirm('Supprimer ce personnage ? Tous les RP et liens associés seront aussi supprimés.')) return;
+
+            try {
+                const { error } = await supabase
+                    .from('personnages')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                showStatus('status-perso', '✓ Personnage supprimé');
+                await loadPersonnages();
+                await loadRPs();
+                await loadLiens();
+            } catch (error) {
+                alert(`Erreur : ${error.message}`);
+            }
+        }
+
+        // ============ RP ============
+
+        async function loadRPs() {
+            try {
+                const { data, error } = await supabase
+                    .from('rps')
+                    .select(`
+                        *,
+                        personnages (prenom, nom)
+                    `)
+                    .order('nom_rp', { ascending: true });
+
+                if (error) throw error;
+
+                rps = data;
+                displayRPs();
+                document.getElementById('count-rp').textContent = data.length;
+            } catch (error) {
+                document.getElementById('list-rp').innerHTML = `<div class="empty">Erreur : ${error.message}</div>`;
+            }
+        }
+
+        function displayRPs() {
+            const container = document.getElementById('list-rp');
+            
+            if (rps.length === 0) {
+                container.innerHTML = '<div class="empty">Aucun RP enregistré</div>';
+                return;
+            }
+
+            container.innerHTML = `
+                <table class="tbl">
+                    <thead>
+                        <tr>
+                            <th>Personnage</th>
+                            <th>Nom du RP</th>
+                            <th>Partenaire</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rps.map(r => `
+                            <tr>
+                                <td>${r.personnages.prenom} ${r.personnages.nom}</td>
+                                <td><strong>${r.nom_rp}</strong></td>
+                                <td>${r.partenaire}</td>
+                                <td>${r.a_jour ? '✓ À jour' : '⏳ En attente'}</td>
+                                <td>
+                                    <div class="tbl-actions">
+                                        <button class="btn" onclick="editRP(${r.id})">Modifier</button>
+                                        <button class="btn" onclick="toggleRPStatus(${r.id}, ${!r.a_jour})">${r.a_jour ? 'Marquer en attente' : 'Marquer à jour'}</button>
+                                        <button class="btn d" onclick="deleteRP(${r.id})">Supprimer</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        document.getElementById('form-rp').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            data.a_jour = formData.get('a_jour') === 'on';
+
+            try {
+                const { error } = await supabase
+                    .from('rps')
+                    .insert([data]);
+
+                if (error) throw error;
+
+                showStatus('status-rp', '✓ RP ajouté avec succès !');
+                e.target.reset();
+                await loadRPs();
+            } catch (error) {
+                showStatus('status-rp', `Erreur : ${error.message}`, true);
+            }
+        });
+
+        async function toggleRPStatus(id, newStatus) {
+            try {
+                const { error } = await supabase
+                    .from('rps')
+                    .update({ a_jour: newStatus })
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                await loadRPs();
+            } catch (error) {
+                alert(`Erreur : ${error.message}`);
+            }
+        }
+
+        async function deleteRP(id) {
+            if (!confirm('Supprimer ce RP ?')) return;
+
+            try {
+                const { error } = await supabase
+                    .from('rps')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                showStatus('status-rp', '✓ RP supprimé');
+                await loadRPs();
+            } catch (error) {
+                alert(`Erreur : ${error.message}`);
+            }
+        }
+
+        // ============ LIENS ============
+
+        async function loadLiens() {
+            try {
+                const { data, error } = await supabase
+                    .from('liens')
+                    .select(`
+                        *,
+                        personnages (prenom, nom)
+                    `)
+                    .order('nom', { ascending: true });
+
+                if (error) throw error;
+
+                liens = data;
+                displayLiens();
+                document.getElementById('count-lien').textContent = data.length;
+            } catch (error) {
+                document.getElementById('list-lien').innerHTML = `<div class="empty">Erreur : ${error.message}</div>`;
+            }
+        }
+
+        function displayLiens() {
+            const container = document.getElementById('list-lien');
+            
+            if (liens.length === 0) {
+                container.innerHTML = '<div class="empty">Aucun lien enregistré</div>';
+                return;
+            }
+
+            container.innerHTML = `
+                <table class="tbl">
+                    <thead>
+                        <tr>
+                            <th>Personnage</th>
+                            <th>Lien avec</th>
+                            <th>Nature</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${liens.map(l => `
+                            <tr>
+                                <td>${l.personnages.prenom} ${l.personnages.nom}</td>
+                                <td><strong>${l.prenom ? l.prenom + ' ' : ''}${l.nom}</strong></td>
+                                <td>${l.nature_lien}</td>
+                                <td>
+                                    <div class="tbl-actions">
+                                        <button class="btn d" onclick="deleteLien(${l.id})">Supprimer</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        document.getElementById('form-lien').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+
+            try {
+                const { error } = await supabase
+                    .from('liens')
+                    .insert([data]);
+
+                if (error) throw error;
+
+                showStatus('status-lien', '✓ Lien ajouté avec succès !');
+                e.target.reset();
+                await loadLiens();
+            } catch (error) {
+                showStatus('status-lien', `Erreur : ${error.message}`, true);
+            }
+        });
+
+        async function deleteLien(id) {
+            if (!confirm('Supprimer ce lien ?')) return;
+
+            try {
+                const { error } = await supabase
+                    .from('liens')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                showStatus('status-lien', '✓ Lien supprimé');
+                await loadLiens();
+            } catch (error) {
+                alert(`Erreur : ${error.message}`);
+            }
+        }
+
+        // ============ UPDATE SELECTS ============
+
+        function updateSelects() {
+            const options = personnages.map(p => 
+                `<option value="${p.id}">${p.prenom} ${p.nom}</option>`
+            ).join('');
+
+            document.getElementById('select-perso-rp').innerHTML = 
+                '<option value="">Choisir un personnage...</option>' + options;
+            document.getElementById('select-perso-lien').innerHTML = 
+                '<option value="">Choisir un personnage...</option>' + options;
+        }
+
+        // ============ INIT ============
+
+        window.addEventListener('load', async function() {
+            setTimeout(async () => {
+                await checkAuth();
+            }, 100);
+        });
+        window.deleteLien = deleteLien;
+        window.deletePersonnage = deletePersonnage;
+        window.switchTab = switchTab;
+        window.deleteRP = deleteRP; 
+        window.toggleRPStatus = toggleRPStatus;
+        window.deleteEditLien = deleteEditLien;
+        window.toggleEditRPStatus = toggleEditRPStatus;
+        window.deleteEditRP = deleteEditRP;
+        window.editPersonnage = editPersonnage;
+    </script>
+</body>
+</html>

@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mes Personnages & RP</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap');
+
+        :root {
+            --bg: #0d0f14;
+            --surface: #13151c;
+            --surface2: #1a1d28;
+            --border: #2a2d3e;
+            --border2: #3a3d52;
+            --accent: #7eb8b0;
+            --accent2: #c4a882;
+            --text: #d4cfc8;
+            --muted: #7a7870;
+            --ok: #5a9e7a;
+            --err: #9e5a5a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Crimson Pro', Georgia, serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 40px 20px;
+            background-image: 
+                radial-gradient(ellipse at 20% 10%, rgba(126, 184, 176, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(196, 168, 130, 0.06) 0%, transparent 50%);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, var(--accent2) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-family: 'Cinzel', serif;
+            letter-spacing: 0.15em;
+            text-align: center;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            opacity: 0.8;
+            margin-bottom: 40px;
+            color: var(--muted);
+            font-style: italic;
+            text-align: center;
+        }
+
+        /* Écran de sélection des personnages */
+        #selection-screen {
+            display: block;
+        }
+
+        #detail-screen {
+            display: none;
+        }
+
+        .characters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .character-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .character-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(126, 184, 176, 0.2);
+            border-color: var(--accent);
+        }
+
+        .character-illustration {
+            width: 100%;
+            height: 380px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .character-info {
+            padding: 20px;
+            background: var(--surface2);
+        }
+
+        .character-name {
+            font-family: 'Cinzel', serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--accent2);
+            letter-spacing: 0.08em;
+            margin-bottom: 8px;
+        }
+
+        .character-avatar {
+            font-size: 13px;
+            color: var(--muted);
+            font-style: italic;
+            margin-bottom: 4px;
+        }
+
+        .character-forum {
+            font-size: 12px;
+            color: var(--accent);
+            font-family: 'Cinzel', serif;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        /* Écran de détail */
+        .back-btn {
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Cinzel', serif;
+            font-size: 12px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            margin-bottom: 30px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .back-btn:hover {
+            background: var(--accent);
+            color: var(--bg);
+        }
+
+        .detail-header {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 30px;
+        }
+
+        .detail-illustration {
+            width: 100%;
+            height: auto;
+            border-radius: 12px;
+            border: 1px solid var(--border2);
+        }
+
+        .detail-info h2 {
+            font-family: 'Cinzel', serif;
+            font-size: 32px;
+            color: var(--accent2);
+            letter-spacing: 0.1em;
+            margin-bottom: 12px;
+        }
+
+        .detail-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .detail-meta-item {
+            font-size: 14px;
+        }
+
+        .detail-meta-label {
+            font-family: 'Cinzel', serif;
+            font-size: 11px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-right: 8px;
+        }
+
+        .detail-description {
+            font-size: 15px;
+            line-height: 1.7;
+            color: var(--text);
+            font-style: italic;
+        }
+
+        /* Sections */
+        .section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-family: 'Cinzel', serif;
+            font-size: 20px;
+            letter-spacing: 0.1em;
+            color: var(--accent2);
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* Liste des RP */
+        .rp-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .rp-item {
+            background: var(--surface2);
+            border: 1px solid var(--border2);
+            border-radius: 10px;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .rp-item:hover {
+            border-color: var(--accent);
+            transform: translateX(4px);
+        }
+
+        .rp-info {
+            flex: 1;
+        }
+
+        .rp-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        .rp-partner {
+            font-size: 13px;
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        .rp-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-family: 'Cinzel', serif;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .rp-status.ok {
+            background: rgba(90, 158, 122, 0.15);
+            color: var(--ok);
+            border: 1px solid rgba(90, 158, 122, 0.3);
+        }
+
+        .rp-status.pending {
+            background: rgba(158, 90, 90, 0.15);
+            color: var(--err);
+            border: 1px solid rgba(158, 90, 90, 0.3);
+        }
+
+        .rp-link {
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 13px;
+            padding: 8px 16px;
+            border: 1px solid var(--border2);
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            font-family: 'Cinzel', serif;
+            letter-spacing: 0.05em;
+        }
+
+        .rp-link:hover {
+            background: var(--accent);
+            color: var(--bg);
+            border-color: var(--accent);
+        }
+
+        /* Liens */
+        .liens-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .lien-card {
+            background: var(--surface2);
+            border: 1px solid var(--border2);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .lien-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-4px);
+        }
+
+        .lien-illustration {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .lien-info {
+            padding: 16px;
+        }
+
+        .lien-name {
+            font-family: 'Cinzel', serif;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--accent2);
+            margin-bottom: 6px;
+        }
+
+        .lien-nature {
+            font-size: 12px;
+            color: var(--accent);
+            font-family: 'Cinzel', serif;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .lien-description {
+            font-size: 13px;
+            line-height: 1.5;
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border2);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .detail-header {
+                grid-template-columns: 1fr;
+            }
+
+            .characters-grid {
+                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Écran de sélection -->
+        <div id="selection-screen">
+            <h1>⚔️ Mes Personnages</h1>
+            <p class="subtitle">Choisissez un personnage pour voir ses RP en cours</p>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Chargement des personnages...</p>
+            </div>
+
+            <div class="characters-grid" id="characters-grid"></div>
+        </div>
+
+        <!-- Écran de détail -->
+        <div id="detail-screen">
+            <button class="back-btn" onclick="showSelection()">
+                ← Retour aux personnages
+            </button>
+
+            <div class="detail-header" id="detail-header"></div>
+
+            <div class="section">
+                <h3 class="section-title">📝 RP en cours</h3>
+                <div class="rp-list" id="rp-list"></div>
+            </div>
+
+            <div class="section">
+                <h3 class="section-title">🔗 Liens & Relations</h3>
+                <div class="liens-grid" id="liens-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // ⚠️ CONFIGURATION SUPABASE - REMPLACEZ PAR VOS VRAIES VALEURS
+        const SUPABASE_URL = 'https://dbcrncfyvullrtyfsmqh.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRiY3JuY2Z5dnVsbHJ0eWZzbXFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NTA1MzUsImV4cCI6MjA5MDAyNjUzNX0.ATxml9DjJWBqJWhxwMWRSiyjrsSKmztyYm28kjjgtS0';
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let currentCharacter = null;
+
+        // Charger les personnages
+        async function loadCharacters() {
+            try {
+                const { data, error } = await supabase
+                    .from('personnages')
+                    .select('*')
+                    .order('nom', { ascending: true });
+
+                if (error) throw error;
+
+                document.getElementById('loading').style.display = 'none';
+                displayCharacters(data);
+            } catch (error) {
+                console.error('Erreur:', error);
+                document.getElementById('loading').innerHTML = `
+                    <p style="color: var(--err);">Erreur de chargement. Vérifiez votre configuration Supabase.</p>
+                    <p style="font-size: 13px; margin-top: 10px;">${error.message}</p>
+                `;
+            }
+        }
+
+        // Afficher les personnages
+        function displayCharacters(characters) {
+            const grid = document.getElementById('characters-grid');
+            grid.innerHTML = characters.map(char => `
+                <div class="character-card" onclick="showDetail(${char.id})">
+                    <img src="${char.illustration_url}" alt="${char.prenom} ${char.nom}" class="character-illustration" onerror="this.src='https://via.placeholder.com/350x480?text=${char.prenom}+${char.nom}'">
+                    <div class="character-info">
+                        <div class="character-name">${char.prenom} ${char.nom}</div>
+                        <div class="character-avatar">${char.avatar}</div>
+                        <div class="character-forum">${char.joue_sur}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Afficher le détail d'un personnage
+        async function showDetail(characterId) {
+            try {
+                // Charger le personnage
+                const { data: character, error: charError } = await supabase
+                    .from('personnages')
+                    .select('*')
+                    .eq('id', characterId)
+                    .single();
+
+                if (charError) throw charError;
+
+                currentCharacter = character;
+
+                // Charger les RP
+                const { data: rps, error: rpsError } = await supabase
+                    .from('rps')
+                    .select('*')
+                    .eq('personnage_id', characterId)
+                    .order('nom_rp', { ascending: true });
+
+                if (rpsError) throw rpsError;
+
+                // Charger les liens
+                const { data: liens, error: liensError } = await supabase
+                    .from('liens')
+                    .select('*')
+                    .eq('personnage_id', characterId);
+
+                if (liensError) throw liensError;
+
+                // Afficher le détail
+                displayDetail(character, rps, liens);
+
+                // Changer d'écran
+                document.getElementById('selection-screen').style.display = 'none';
+                document.getElementById('detail-screen').style.display = 'block';
+                window.scrollTo(0, 0);
+
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur de chargement des détails');
+            }
+        }
+
+        // Afficher les détails
+        function displayDetail(character, rps, liens) {
+            // Header
+            document.getElementById('detail-header').innerHTML = `
+                <img src="${character.gif_url || character.illustration_url}" alt="${character.prenom} ${character.nom}" class="detail-illustration" onerror="this.src='https://via.placeholder.com/350x480?text=${character.prenom}+${character.nom}'">
+                <div class="detail-info">
+                    <h2>${character.prenom} ${character.nom}</h2>
+                    <div class="detail-meta">
+                        <div class="detail-meta-item">
+                            <span class="detail-meta-label">Avatar</span>
+                            <span>${character.avatar}</span>
+                        </div>
+                        <div class="detail-meta-item">
+                            <span class="detail-meta-label">Forum</span>
+                            <span>${character.joue_sur}</span>
+                        </div>
+                    </div>
+                    <div class="detail-description">${character.description}</div>
+                </div>
+            `;
+
+            // RP List
+            document.getElementById('rp-list').innerHTML = rps.length > 0 ? rps.map(rp => `
+                <div class="rp-item">
+                    <div class="rp-info">
+                        <div class="rp-name">${rp.nom_rp}</div>
+                        <div class="rp-partner">avec ${rp.partenaire}</div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 16px;">
+                        <div class="rp-status ${rp.a_jour ? 'ok' : 'pending'}">
+                            ${rp.a_jour ? '✓ À jour' : '⏳ En attente'}
+                        </div>
+                        ${rp.url_rp ? `<a href="${rp.url_rp}" target="_blank" class="rp-link">Voir RP →</a>` : ''}
+                    </div>
+                </div>
+            `).join('') : '<p style="color: var(--muted); font-style: italic; text-align: center; padding: 20px;">Aucun RP en cours</p>';
+
+            // Liens
+            document.getElementById('liens-grid').innerHTML = liens.length > 0 ? liens.map(lien => `
+                <div class="lien-card">
+                    <img src="${lien.illustration_url}" alt="${lien.prenom} ${lien.nom}" class="lien-illustration" onerror="this.src='https://via.placeholder.com/200x200?text=${lien.prenom || ''}+${lien.nom || ''}'">
+                    <div class="lien-info">
+                        <div class="lien-name">${lien.prenom ? lien.prenom + ' ' : ''}${lien.nom}</div>
+                        <div class="lien-nature">${lien.nature_lien}</div>
+                        <div class="lien-description">${lien.description}</div>
+                    </div>
+                </div>
+            `).join('') : '<p style="color: var(--muted); font-style: italic; text-align: center; padding: 20px;">Aucun lien défini</p>';
+        }
+
+        // Retour à la sélection
+        function showSelection() {
+            document.getElementById('selection-screen').style.display = 'block';
+            document.getElementById('detail-screen').style.display = 'none';
+            window.scrollTo(0, 0);
+        }
+
+        // Initialisation
+        loadCharacters();
+        window.showDetail = showDetail;
+        window.showSelection = showSelection;
+    </script>
+</body>
+</html>

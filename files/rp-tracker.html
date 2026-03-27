@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mes Personnages & RP</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/js/rp-tracker.js"></script>
+    <link href="/css/rp-tracker.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Écran de sélection -->
+        <div id="selection-screen">
+            <h1>⚔️ Mes Personnages</h1>
+            <p class="subtitle">Choisissez un personnage pour voir ses RP en cours</p>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Chargement des personnages...</p>
+            </div>
+
+            <div class="characters-grid" id="characters-grid"></div>
+        </div>
+
+        <!-- Écran de détail -->
+        <div id="detail-screen">
+            <button class="back-btn" onclick="showSelection()">
+                ← Retour aux personnages
+            </button>
+
+            <div class="detail-header" id="detail-header"></div>
+
+            <div class="section">
+                <h3 class="section-title">📝 RP en cours</h3>
+                <div class="rp-list" id="rp-list"></div>
+            </div>
+
+            <div class="section">
+                <h3 class="section-title">🔗 Liens & Relations</h3>
+                <div class="liens-grid" id="liens-grid"></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
