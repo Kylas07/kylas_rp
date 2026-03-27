@@ -285,10 +285,10 @@
             background: url(../assets/1026cbea7b06928df53e66045a1badaf.jpg) no-repeat center center;;
         }
         .app-green { 
-            background: linear-gradient(135deg, #6a9976 0%, #577e62 100%);
+            background: url(../assets/5bba000e97f2ae347e6949b412bdb5a4.jpg) no-repeat center center;;
         }
         .app-orange { 
-            background: linear-gradient(135deg, #b8926a 0%, #9a7854 100%);
+            background: url(../assets/108bd12feda1df55de5f5654b4131dc6.jpg) no-repeat center center;;
         }
         .app-pink { 
             background: linear-gradient(135deg, #a77e8e 0%, #8a6574 100%);
