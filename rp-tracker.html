@@ -314,6 +314,78 @@
             border-color: var(--accent);
         }
 
+        /* Compteur RP mensuel */
+        .rp-counter {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin-top: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .rp-counter-label {
+            font-size: 10px;
+            color: var(--muted);
+            font-family: 'Cinzel', serif;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .rp-counter-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .rp-counter-btn {
+            background: var(--surface);
+            border: 1px solid var(--border2);
+            color: var(--accent);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .rp-counter-btn:hover {
+            background: var(--accent);
+            color: var(--bg);
+            border-color: var(--accent);
+            transform: scale(1.1);
+        }
+
+        .rp-counter-btn:active {
+            transform: scale(0.95);
+        }
+
+        .rp-counter-value {
+            font-family: 'Cinzel', serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--accent2);
+            min-width: 30px;
+            text-align: center;
+            transition: transform 0.2s ease;
+        }
+
+        .rp-counter-month {
+            font-size: 9px;
+            color: var(--muted);
+            font-style: italic;
+            margin-top: 2px;
+            text-align: center;
+        }
+
         /* Liens */
         .liens-grid {
             display: grid;
@@ -438,7 +510,6 @@
     </div>
 
     <script type="module">
-        // ⚠️ CONFIGURATION SUPABASE - REMPLACEZ PAR VOS VRAIES VALEURS
         const SUPABASE_URL = 'https://dbcrncfyvullrtyfsmqh.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRiY3JuY2Z5dnVsbHJ0eWZzbXFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NTA1MzUsImV4cCI6MjA5MDAyNjUzNX0.ATxml9DjJWBqJWhxwMWRSiyjrsSKmztyYm28kjjgtS0';
 
@@ -470,16 +541,31 @@
         // Afficher les personnages
         function displayCharacters(characters) {
             const grid = document.getElementById('characters-grid');
-            grid.innerHTML = characters.map(char => `
-                <div class="character-card" onclick="showDetail(${char.id})">
-                    <img src="${char.illustration_url}" alt="${char.prenom} ${char.nom}" class="character-illustration" onerror="this.src='https://via.placeholder.com/350x480?text=${char.prenom}+${char.nom}'">
-                    <div class="character-info">
-                        <div class="character-name">${char.prenom} ${char.nom}</div>
-                        <div class="character-avatar">${char.avatar}</div>
-                        <div class="character-forum">${char.joue_sur}</div>
+            grid.innerHTML = characters.map(char => {
+                const counter = getRPCounter(char.id, currentMonth);
+                return `
+                <div class="character-card">
+                    <div onclick="showDetail(${char.id})">
+                        <img src="${char.illustration_url}" alt="${char.prenom} ${char.nom}" class="character-illustration" onerror="this.src='https://via.placeholder.com/350x480?text=${char.prenom}+${char.nom}'">
+                        <div class="character-info">
+                            <div class="character-name">${char.prenom} ${char.nom}</div>
+                            <div class="character-avatar">${char.avatar}</div>
+                            <div class="character-forum">${char.joue_sur}</div>
+                        </div>
+                    </div>
+                    <div class="rp-counter" onclick="event.stopPropagation()">
+                        <div>
+                            <div class="rp-counter-label">RP ce mois</div>
+                            <div class="rp-counter-month">${monthLabel}</div>
+                        </div>
+                        <div class="rp-counter-controls">
+                            <div class="rp-counter-btn" onclick="decrementCounter(${char.id})">−</div>
+                            <div class="rp-counter-value" id="counter-${char.id}">${counter}</div>
+                            <div class="rp-counter-btn" onclick="incrementCounter(${char.id})">+</div>
+                        </div>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
         }
 
         // Afficher le détail d'un personnage
@@ -583,11 +669,80 @@
             document.getElementById('detail-screen').style.display = 'none';
             window.scrollTo(0, 0);
         }
+        // ============ COMPTEUR RP MENSUEL ============
+        
+        // Obtenir la clé du mois actuel (YYYY-MM)
+        function getCurrentMonthKey() {
+            const now = new Date();
+            return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        }
 
+        // Obtenir le label du mois actuel
+        function getCurrentMonthLabel() {
+            const now = new Date();
+            const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
+            return `${months[now.getMonth()]} ${now.getFullYear()}`;
+        }
+
+        // Récupérer le compteur d'un personnage pour un mois
+        function getRPCounter(characterId, monthKey) {
+            const key = `rp-counter-${characterId}-${monthKey}`;
+            const stored = localStorage.getItem(key);
+            return stored ? parseInt(stored) : 0;
+        }
+
+        // Incrémenter le compteur
+        function incrementCounter(characterId) {
+            const monthKey = getCurrentMonthKey();
+            const key = `rp-counter-${characterId}-${monthKey}`;
+            const current = getRPCounter(characterId, monthKey);
+            const newValue = current + 1;
+            localStorage.setItem(key, newValue);
+            
+            // Mettre à jour l'affichage
+            const counterEl = document.getElementById(`counter-${characterId}`);
+            if (counterEl) {
+                counterEl.textContent = newValue;
+                counterEl.style.transform = 'scale(1.3)';
+                setTimeout(() => {
+                    counterEl.style.transform = 'scale(1)';
+                }, 200);
+            }
+        }
+
+        // Décrémenter le compteur
+        function decrementCounter(characterId) {
+            const monthKey = getCurrentMonthKey();
+            const key = `rp-counter-${characterId}-${monthKey}`;
+            const current = getRPCounter(characterId, monthKey);
+            if (current > 0) {
+                const newValue = current - 1;
+                localStorage.setItem(key, newValue);
+                
+                // Mettre à jour l'affichage
+                const counterEl = document.getElementById(`counter-${characterId}`);
+                if (counterEl) {
+                    counterEl.textContent = newValue;
+                    counterEl.style.transform = 'scale(0.8)';
+                    setTimeout(() => {
+                        counterEl.style.transform = 'scale(1)';
+                    }, 200);
+                }
+            }
+        }
+
+        // ============ FIN COMPTEUR ============
         // Initialisation
         loadCharacters();
         window.showDetail = showDetail;
         window.showSelection = showSelection;
+        window.incrementCounter = incrementCounter;
+        window.decrementCounter = decrementCounter;
+        window.getRPCounter = getRPCounter;
+        window.monthLabel = getCurrentMonthLabel();
+        window.currentMonth = getCurrentMonthKey();
+        window.getCurrentMonthLabel = getCurrentMonthLabel;
+        window.getCurrentMonthKey = getCurrentMonthKey;
     </script>
 </body>
 </html>
